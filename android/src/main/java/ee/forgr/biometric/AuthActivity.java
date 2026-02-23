@@ -72,11 +72,11 @@ public class AuthActivity extends AppCompatActivity {
             .setSubtitle(getIntent().hasExtra("subtitle") ? getIntent().getStringExtra("subtitle") : null)
             .setDescription(getIntent().hasExtra("description") ? getIntent().getStringExtra("description") : null);
 
-        // Note: useFallback parameter is ignored on Android (iOS-only feature)
-        // Android's BiometricPrompt API has a constraint: when DEVICE_CREDENTIAL authenticator is used,
-        // setNegativeButtonText() cannot be called (it will throw IllegalArgumentException).
-        // Since this plugin always provides a cancel button for consistency, we cannot support
-        // device credential fallback. Users should use system settings to enroll biometrics instead.
+        // When useFallback=true, DEVICE_CREDENTIAL is added so the system shows PIN/pattern/password
+        // as a fallback option inside the native biometric prompt.
+        // Android API constraint: setNegativeButtonText() and DEVICE_CREDENTIAL are mutually exclusive,
+        // so the negative/cancel button is omitted when useFallback=true (the back gesture cancels instead).
+        boolean useFallback = getIntent().getBooleanExtra("useFallback", false);
         int[] allowedTypes = getIntent().getIntArrayExtra("allowedBiometryTypes");
 
         int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
@@ -84,10 +84,16 @@ public class AuthActivity extends AppCompatActivity {
             // Filter authenticators based on allowed types
             authenticators = getAllowedAuthenticators(allowedTypes);
         }
+        if (useFallback) {
+            authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+        }
         builder.setAllowedAuthenticators(authenticators);
 
-        String negativeText = getIntent().getStringExtra("negativeButtonText");
-        builder.setNegativeButtonText(negativeText != null ? negativeText : "Cancel");
+        // Negative button is incompatible with DEVICE_CREDENTIAL — omit it when useFallback=true
+        if (!useFallback) {
+            String negativeText = getIntent().getStringExtra("negativeButtonText");
+            builder.setNegativeButtonText(negativeText != null ? negativeText : "Cancel");
+        }
 
         BiometricPrompt.PromptInfo promptInfo = builder.build();
 
