@@ -286,8 +286,10 @@ public class NativeBiometric extends Plugin {
             intent.putExtra("username", username);
             intent.putExtra("password", password);
             intent.putExtra("accessControl", accessControl);
-            intent.putExtra("title", "Protect Credentials");
-            intent.putExtra("negativeButtonText", "Cancel");
+            String title = call.getString("title", "Protect Credentials");
+            String negativeButtonText = call.getString("negativeButtonText", "Cancel");
+            intent.putExtra("title", title);
+            intent.putExtra("negativeButtonText", negativeButtonText);
             startActivityForResult(call, intent, "setSecureCredentialsResult");
         } else {
             try {

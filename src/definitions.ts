@@ -162,6 +162,16 @@ export interface SetCredentialOptions {
    * @since 8.4.0
    */
   accessControl?: AccessControl;
+  /**
+   * Title for the biometric prompt when storing credentials (accessControl > 0).
+   * Android only; iOS uses the system prompt.
+   */
+  title?: string;
+  /**
+   * Negative button label for the biometric prompt when storing credentials.
+   * Android only.
+   */
+  negativeButtonText?: string;
 }
 
 export interface GetSecureCredentialsOptions {
