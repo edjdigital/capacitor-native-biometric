@@ -122,7 +122,9 @@ public class AuthActivity extends AppCompatActivity {
                     } else if ("getSecureCredentials".equals(mode)) {
                         handleGetSecureCredentials(result);
                     } else {
-                        if (!validateCryptoObject(result)) {
+                        // When useFallback=true, DEVICE_CREDENTIAL is used which does not produce a
+                        // CryptoObject in the result — skip crypto validation in that case.
+                        if (!useFallback && !validateCryptoObject(result)) {
                             finishActivity("error", 10, "Biometric security check failed");
                             return;
                         }
@@ -142,6 +144,13 @@ public class AuthActivity extends AppCompatActivity {
                 }
             }
         );
+
+        // DEVICE_CREDENTIAL (useFallback=true) is incompatible with CryptoObject on Android.
+        // In that case, authenticate without a CryptoObject (identity verification only).
+        if (useFallback) {
+            biometricPrompt.authenticate(promptInfo);
+            return;
+        }
 
         BiometricPrompt.CryptoObject cryptoObject;
         if ("setSecureCredentials".equals(mode)) {
