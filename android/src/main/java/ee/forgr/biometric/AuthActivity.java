@@ -43,6 +43,7 @@ public class AuthActivity extends AppCompatActivity {
     private String mode;
     private int maxAttempts;
     private int counter = 0;
+    private boolean activityFinished = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,9 +137,11 @@ public class AuthActivity extends AppCompatActivity {
                     super.onAuthenticationFailed();
                     counter++;
                     if (counter >= maxAttempts) {
-                        biometricPrompt.cancelAuthentication();
-                        // Use error code 4 for too many attempts to match iOS behavior
-                        finishActivity("error", 4, "Too many failed attempts");
+                        // Do NOT call cancelAuthentication() — it triggers onAuthenticationError(ERROR_CANCELED)
+                        // which would call finishActivity again, overwriting our result.
+                        // finish() alone closes the Activity and dismisses the BiometricPrompt automatically.
+                        // We cannot use error code 4 here; it is reserved for Android system lockout (30s) from onAuthenticationError.
+                        finishActivity("error", 10, "Authentication Failed");
                     }
                 }
             }
@@ -170,6 +173,8 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     void finishActivity(String result, Integer errorCode, String errorDetails) {
+        if (activityFinished) return;
+        activityFinished = true;
         Intent intent = new Intent();
         intent.putExtra("result", result);
         if (errorCode != null) {
