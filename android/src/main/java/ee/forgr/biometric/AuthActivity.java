@@ -137,7 +137,7 @@ public class AuthActivity extends AppCompatActivity {
                     super.onAuthenticationFailed();
                     counter++;
                     if (counter >= maxAttempts) {
-                        // Do NOT call cancelAuthentication() — it triggers onAuthenticationError(ERROR_CANCELED)
+                        // Do NOT call cancelAuthentication() here, it triggers onAuthenticationError(ERROR_CANCELED)
                         // which would call finishActivity again, overwriting our result.
                         // finish() alone closes the Activity and dismisses the BiometricPrompt automatically.
                         // We cannot use error code 4 here; it is reserved for Android system lockout (30s) from onAuthenticationError.
@@ -173,8 +173,10 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     void finishActivity(String result, Integer errorCode, String errorDetails) {
+        // Prevent multiple calls to finishActivity() from being called twice.
         if (activityFinished) return;
         activityFinished = true;
+
         Intent intent = new Intent();
         intent.putExtra("result", result);
         if (errorCode != null) {
