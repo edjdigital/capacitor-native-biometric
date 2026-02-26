@@ -86,7 +86,11 @@ public class AuthActivity extends AppCompatActivity {
             authenticators = getAllowedAuthenticators(allowedTypes);
         }
         if (useFallback) {
-            authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // API 30+: BIOMETRIC_STRONG | DEVICE_CREDENTIAL is supported
+                authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+            }
+            // API 28-29: combination unsupported; keep BIOMETRIC_STRONG only so fingerprint works
         }
         builder.setAllowedAuthenticators(authenticators);
 
